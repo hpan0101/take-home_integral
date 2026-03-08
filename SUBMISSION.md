@@ -42,7 +42,7 @@
 
 ## Loom recording
 
-**Loom link:** [paste your Loom URL here]
+**Loom link:** https://www.loom.com/share/67dfcd0b6d79403dadcea06a53def6ea
 
 *(A short walkthrough of the app is preferred.)*
 
@@ -53,5 +53,5 @@
 - [x] Total time spent noted above
 - [x] Priorities and rationale described
 - [x] Improvements-with-more-time listed
-- [ ] Loom recording linked (or note if not provided)
-- [ ] Frequent commits pushed to your fork / zip shared
+- [x] Loom recording linked (or note if not provided)
+- [x] Frequent commits pushed to your fork / zip shared
