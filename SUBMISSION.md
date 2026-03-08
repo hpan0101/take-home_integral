@@ -45,7 +45,7 @@
 **Loom link:** https://www.loom.com/share/67dfcd0b6d79403dadcea06a53def6ea
 
 *(A short walkthrough of the app is preferred.)*
-
+ "This is the clinical trial enrollment app. There are two main roles in the app: **patients** submit applications; **reviewers** screen them with masked PII by default and can switch to full access data when needed. I’ll show both flows."
 ---
 
 ## Submission checklist
