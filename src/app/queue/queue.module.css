@@ -1,0 +1,103 @@
+.main {
+  padding: 2rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.card {
+  padding: 2rem;
+  background: rgba(var(--tile-start-rgb), 0.8);
+  border: 1px solid rgba(var(--tile-border));
+  border-radius: var(--border-radius);
+}
+
+.title {
+  font-size: 1.75rem;
+  margin: 0 0 0.5rem;
+}
+
+.subtitle {
+  color: rgb(80, 80, 80);
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table th,
+.table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(var(--card-border-rgb), 0.5);
+}
+
+.table th {
+  font-weight: 600;
+  color: rgb(60, 60, 60);
+}
+
+.table tbody tr:hover {
+  background: rgba(var(--card-border-rgb), 0.08);
+}
+
+.link {
+  color: rgb(0, 112, 255);
+  text-decoration: underline;
+}
+
+.link:hover {
+  text-decoration: none;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.statusPending {
+  background: rgb(255, 240, 200);
+  color: rgb(140, 100, 0);
+}
+
+.statusInReview {
+  background: rgb(220, 235, 255);
+  color: rgb(0, 80, 180);
+}
+
+.statusApproved {
+  background: rgb(220, 255, 220);
+  color: rgb(0, 100, 50);
+}
+
+.statusRejected {
+  background: rgb(255, 220, 220);
+  color: rgb(140, 0, 0);
+}
+
+.loading {
+  color: rgb(80, 80, 80);
+  padding: 1.5rem;
+}
+
+.error {
+  color: rgb(180, 0, 0);
+  font-size: 0.95rem;
+  padding: 1rem 0;
+}
+
+.empty {
+  color: rgb(100, 100, 100);
+  padding: 1.5rem;
+  font-size: 0.95rem;
+}
