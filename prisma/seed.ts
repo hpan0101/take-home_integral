@@ -1,11 +1,16 @@
 import "dotenv/config";
+import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 
-const adapter = new PrismaLibSql({
-  url: `file:${process.env.DATABASE_URL!.replace("file:", "")}`,
-});
+const dbUrl = process.env.DATABASE_URL ?? "file:./dev.db";
+const filePath = dbUrl.replace("file:", "").trim();
+// Match Prisma: "file:./dev.db" is relative to project root (cwd)
+const absolutePath = path.isAbsolute(filePath)
+  ? filePath
+  : path.resolve(process.cwd(), filePath);
 
+const adapter = new PrismaLibSql({ url: `file:${absolutePath}` });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
