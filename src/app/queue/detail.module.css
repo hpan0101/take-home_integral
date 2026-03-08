@@ -1,0 +1,166 @@
+.card {
+  padding: 2rem;
+  background: rgba(var(--tile-start-rgb), 0.8);
+  border: 1px solid rgba(var(--tile-border));
+  border-radius: var(--border-radius);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  margin: 0;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.statusPending {
+  background: rgb(255, 240, 200);
+  color: rgb(140, 100, 0);
+}
+
+.statusInReview {
+  background: rgb(220, 235, 255);
+  color: rgb(0, 80, 180);
+}
+
+.statusApproved {
+  background: rgb(220, 255, 220);
+  color: rgb(0, 100, 50);
+}
+
+.statusRejected {
+  background: rgb(255, 220, 220);
+  color: rgb(140, 0, 0);
+}
+
+.toggleRow {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(var(--card-border-rgb), 0.08);
+  border-radius: 6px;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 1.1rem;
+  height: 1.1rem;
+  cursor: pointer;
+}
+
+.toggleHint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: rgb(80, 80, 80);
+}
+
+.dl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.row dt {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgb(60, 60, 60);
+}
+
+.row dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.description {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.loading {
+  color: rgb(80, 80, 80);
+  padding: 1.5rem;
+}
+
+.error {
+  color: rgb(180, 0, 0);
+  font-size: 0.95rem;
+  padding: 1rem 0;
+}
+
+.auditSection {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(var(--card-border-rgb), 0.5);
+}
+
+.auditTitle {
+  font-size: 1.1rem;
+  margin: 0 0 0.75rem;
+  color: rgb(60, 60, 60);
+}
+
+.auditList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.auditItem {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(var(--card-border-rgb), 0.25);
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.auditItem:last-child {
+  border-bottom: none;
+}
+
+.auditAction {
+  font-weight: 600;
+  color: rgb(40, 40, 40);
+}
+
+.auditMeta {
+  color: rgb(80, 80, 80);
+  font-size: 0.85rem;
+}
+
+.auditDetails {
+  font-size: 0.8rem;
+  color: rgb(100, 100, 100);
+  font-family: monospace;
+}
