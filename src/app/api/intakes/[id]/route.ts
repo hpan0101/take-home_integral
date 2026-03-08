@@ -39,6 +39,7 @@ export async function GET(
           user: { select: { id: true, name: true, email: true } },
         },
       },
+      documents: { orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -164,6 +165,7 @@ export async function PATCH(
           user: { select: { id: true, name: true, email: true } },
         },
       },
+      documents: { orderBy: { createdAt: "desc" } },
     },
   });
 

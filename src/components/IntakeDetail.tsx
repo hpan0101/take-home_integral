@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import styles from "@/app/queue/detail.module.css";
+import AuditLog from "@/components/AuditLog";
 
 interface IntakeDetailProps {
   intakeId: string;
@@ -22,6 +23,15 @@ interface AuditLogEntry {
   user: UserRef;
 }
 
+interface DocumentRef {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  description: string | null;
+  createdAt: string;
+}
+
 interface IntakeResponse {
   id: string;
   status: string;
@@ -36,6 +46,7 @@ interface IntakeResponse {
   submittedBy: UserRef;
   reviewer: UserRef | null;
   auditLogs: AuditLogEntry[];
+  documents?: DocumentRef[];
 }
 
 const STATUS_CLASS: Record<string, string> = {
@@ -233,24 +244,32 @@ export default function IntakeDetail({ intakeId }: IntakeDetailProps) {
         )}
       </dl>
 
-      {intake.auditLogs && intake.auditLogs.length > 0 && (
+      {intake.documents && intake.documents.length > 0 && (
         <section className={styles.auditSection}>
-          <h3 className={styles.auditTitle}>Audit trail</h3>
+          <h3 className={styles.auditTitle}>Supporting documents</h3>
           <ul className={styles.auditList}>
-            {intake.auditLogs.map((log) => (
-              <li key={log.id} className={styles.auditItem}>
-                <span className={styles.auditAction}>{log.action}</span>
+            {intake.documents.map((doc) => (
+              <li key={doc.id} className={styles.auditItem}>
+                <a
+                  href={`/api/intakes/${intakeId}/documents/${doc.id}/file`}
+                  className={styles.docLink}
+                  download={doc.fileName}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {doc.fileName}
+                </a>
                 <span className={styles.auditMeta}>
-                  {log.user?.name ?? log.user?.email ?? "Unknown"} · {formatDate(log.createdAt)}
+                  {(doc.fileSize / 1024).toFixed(1)} KB
+                  {doc.description ? ` · ${doc.description}` : ""}
                 </span>
-                {log.details && (
-                  <span className={styles.auditDetails}>{log.details}</span>
-                )}
               </li>
             ))}
           </ul>
         </section>
       )}
+
+      <AuditLog intakeId={intakeId} entries={intake.auditLogs} />
     </div>
   );
 }

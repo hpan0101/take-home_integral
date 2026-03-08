@@ -33,11 +33,19 @@ const initialFormState: FormState = {
   notes: "",
 };
 
+type CreatedIntake = { id: string };
+
 export default function IntakePage() {
   const [form, setForm] = useState<FormState>(initialFormState);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [createdIntakeId, setCreatedIntakeId] = useState<string | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadDescription, setUploadDescription] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
   const update = (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -78,12 +86,47 @@ export default function IntakePage() {
         return;
       }
 
+      const created = data as CreatedIntake;
       setSuccess("Enrollment application submitted successfully.");
       setForm(initialFormState);
+      if (created?.id) setCreatedIntakeId(created.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createdIntakeId || !uploadFile) {
+      setUploadError("Please select a file to upload.");
+      return;
+    }
+    setUploadError(null);
+    setUploadSuccess(null);
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+      if (uploadDescription.trim()) formData.append("description", uploadDescription.trim());
+      const res = await fetch(`/api/intakes/${createdIntakeId}/documents`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setUploadError(data.error ?? `Upload failed (${res.status})`);
+        return;
+      }
+      setUploadSuccess(`"${uploadFile.name}" uploaded.`);
+      setUploadFile(null);
+      setUploadDescription("");
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed.");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -96,13 +139,67 @@ export default function IntakePage() {
         </p>
 
         {success && (
-          <p className={styles.success} role="alert">
-            {success}{" "}
-            <Link href="/" className={styles.link}>
-              Back to home
-            </Link>
-            {" or submit another below."}
-          </p>
+          <>
+            <p className={styles.success} role="alert">
+              {success}{" "}
+              <Link href="/" className={styles.link}>
+                Back to home
+              </Link>
+              {" or submit another below."}
+            </p>
+            {createdIntakeId && (
+              <div className={styles.uploadSection}>
+                <h2 className={styles.uploadTitle}>Upload supporting documents (optional)</h2>
+                <p className={styles.uploadSubtitle}>
+                  Medical records, insurance cards, prescriptions, etc. PDF, JPEG, PNG, GIF, WebP. Max 10 MB.
+                </p>
+                <form onSubmit={handleUpload} className={styles.uploadForm}>
+                  <label className={styles.label}>
+                    File
+                    <input
+                      type="file"
+                      accept=".pdf,image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                      onChange={(e) => {
+                        setUploadFile(e.target.files?.[0] ?? null);
+                        setUploadError(null);
+                      }}
+                      className={styles.input}
+                      disabled={uploading}
+                    />
+                  </label>
+                  <label className={styles.label}>
+                    Description (optional)
+                    <input
+                      type="text"
+                      value={uploadDescription}
+                      onChange={(e) => setUploadDescription(e.target.value)}
+                      placeholder="e.g. Insurance card front"
+                      className={styles.input}
+                      disabled={uploading}
+                    />
+                  </label>
+                  {uploadError && (
+                    <p className={styles.error} role="alert">{uploadError}</p>
+                  )}
+                  {uploadSuccess && (
+                    <p className={styles.success} role="status">{uploadSuccess}</p>
+                  )}
+                  <div className={styles.actions}>
+                    <button
+                      type="submit"
+                      className={styles.submit}
+                      disabled={uploading || !uploadFile}
+                    >
+                      {uploading ? "Uploading…" : "Upload document"}
+                    </button>
+                    <Link href="/" className={styles.secondary}>
+                      Back to home
+                    </Link>
+                  </div>
+                </form>
+              </div>
+            )}
+          </>
         )}
 
         {error && (

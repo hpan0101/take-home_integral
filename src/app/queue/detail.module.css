@@ -200,3 +200,13 @@
   color: rgb(100, 100, 100);
   font-family: monospace;
 }
+
+.docLink {
+  color: rgb(0, 112, 255);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.docLink:hover {
+  color: rgb(0, 95, 220);
+}
