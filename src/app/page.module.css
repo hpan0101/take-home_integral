@@ -23,6 +23,17 @@
   margin: 0;
 }
 
+.userInfo {
+  font-size: 0.95rem;
+  color: rgb(80, 80, 80);
+  margin-top: 0.5rem;
+}
+
+.linkInline {
+  color: rgb(0, 112, 255);
+  text-decoration: underline;
+}
+
 .nav {
   display: flex;
   flex-direction: column;

@@ -29,6 +29,7 @@ model User {
   name         String
   role         Role
   organization String
+  passwordHash String?  // For credentials-based login; demo users only in this take-home
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

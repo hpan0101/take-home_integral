@@ -1,5 +1,6 @@
 import "dotenv/config";
 import path from "path";
+import { hash } from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 
@@ -16,19 +17,23 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("Seeding database...");
 
+  const DEMO_PASSWORD = "password";
+  const passwordHash = await hash(DEMO_PASSWORD, 10);
+
   // Clear existing data
   await prisma.auditLog.deleteMany();
   await prisma.document.deleteMany();
   await prisma.intake.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create demo users
+  // Create demo users (credentials: email / password)
   const patientUser = await prisma.user.create({
     data: {
       email: "patient@demo.com",
       name: "Demo Patient",
       role: "PATIENT",
       organization: "Trial Participant",
+      passwordHash,
     },
   });
 
@@ -38,6 +43,7 @@ async function main() {
       name: "Dr. Sarah Chen",
       role: "REVIEWER",
       organization: "PharmaCorp Trial Coordinator",
+      passwordHash,
     },
   });
 
