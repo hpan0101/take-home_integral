@@ -145,3 +145,48 @@ button.secondary:disabled {
   flex-direction: column;
   gap: 1rem;
 }
+
+.fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(var(--card-border-rgb), 0.15);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.fileName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.removeFile {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: rgb(180, 0, 0);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.removeFile:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.removeFile:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

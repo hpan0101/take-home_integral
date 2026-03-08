@@ -29,12 +29,16 @@ export default async function Home() {
           )}
         </header>
         <nav className={styles.nav}>
-          <Link href="/intake" className={styles.link}>
-            Submit Intake
-          </Link>
-          <Link href="/queue" className={styles.link}>
-            Review Queue
-          </Link>
+          {role !== "REVIEWER" && (
+            <Link href="/intake" className={styles.link}>
+              Submit Intake
+            </Link>
+          )}
+          {role !== "PATIENT" && (
+            <Link href="/queue" className={styles.link}>
+              Review Queue
+            </Link>
+          )}
         </nav>
       </div>
     </main>

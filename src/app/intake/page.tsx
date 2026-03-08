@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./intake.module.css";
@@ -36,21 +36,43 @@ const initialFormState: FormState = {
 
 type CreatedIntake = { id: string };
 
+const MAX_FILE_SIZE_MB = 10;
+const ACCEPTED_TYPES = ".pdf,image/jpeg,image/png,image/gif,image/webp,application/pdf";
+
 export default function IntakePage() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<FormState>(initialFormState);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [createdIntakeId, setCreatedIntakeId] = useState<string | null>(null);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploadDescription, setUploadDescription] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
 
   const update = (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    setError(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    const maxBytes = MAX_FILE_SIZE_MB * 1024 * 1024;
+    const valid: File[] = [];
+    for (const f of files) {
+      if (f.size > maxBytes) {
+        setError(`"${f.name}" is too large. Max ${MAX_FILE_SIZE_MB} MB per file.`);
+        e.target.value = "";
+        return;
+      }
+      valid.push(f);
+    }
+    setSelectedFiles((prev) => [...prev, ...valid]);
+    setError(null);
+    e.target.value = "";
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setError(null);
   };
 
@@ -66,6 +88,7 @@ export default function IntakePage() {
     }
 
     setSubmitting(true);
+    setUploadProgress(null);
     try {
       const res = await fetch("/api/intakes", {
         method: "POST",
@@ -89,119 +112,74 @@ export default function IntakePage() {
       }
 
       const created = data as CreatedIntake;
-      setSuccess("Enrollment application submitted successfully.");
+      if (!created?.id) {
+        setError("Invalid response from server.");
+        return;
+      }
+
+      if (selectedFiles.length === 0) {
+        setSuccess("Enrollment application submitted successfully.");
+        setForm(initialFormState);
+        setSubmitting(false);
+        return;
+      }
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        setUploadProgress({ current: i + 1, total: selectedFiles.length });
+        const formData = new FormData();
+        formData.append("file", selectedFiles[i]);
+        const uploadRes = await fetch(`/api/intakes/${created.id}/documents`, {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        const uploadData = await uploadRes.json().catch(() => ({}));
+        if (!uploadRes.ok) {
+          setError(uploadData.error ?? `Upload failed for "${selectedFiles[i].name}" (${uploadRes.status}).`);
+          setUploadProgress(null);
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      setSuccess(
+        selectedFiles.length === 1
+          ? "Application and 1 document submitted successfully."
+          : `Application and ${selectedFiles.length} documents submitted successfully.`
+      );
       setForm(initialFormState);
-      if (created?.id) setCreatedIntakeId(created.id);
+      setSelectedFiles([]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error. Please try again.");
     } finally {
       setSubmitting(false);
+      setUploadProgress(null);
     }
   };
 
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!createdIntakeId || !uploadFile) {
-      setUploadError("Please select a file to upload.");
-      return;
-    }
-    setUploadError(null);
-    setUploadSuccess(null);
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", uploadFile);
-      if (uploadDescription.trim()) formData.append("description", uploadDescription.trim());
-      const res = await fetch(`/api/intakes/${createdIntakeId}/documents`, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setUploadError(data.error ?? `Upload failed (${res.status})`);
-        return;
-      }
-      setUploadSuccess(`"${uploadFile.name}" uploaded.`);
-      setUploadFile(null);
-      setUploadDescription("");
-    } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  };
+  const submitLabel = uploadProgress
+    ? `Uploading documents (${uploadProgress.current} of ${uploadProgress.total})…`
+    : submitting
+      ? "Submitting…"
+      : "Submit application";
 
   return (
     <main className={styles.main}>
       <div className={styles.card}>
         <h1 className={styles.title}>Submit Intake</h1>
         <p className={styles.subtitle}>
-          Submit a new enrollment application. All fields marked with * are required.
+          Submit a new enrollment application and optional supporting documents. All fields marked with * are required.
         </p>
 
         {success && (
-          <>
-            <p className={styles.success} role="alert">
-              {success}{" "}
-              <Link href="/" className={styles.link}>
-                Back to home
-              </Link>
-              {" or submit another below."}
-            </p>
-            {createdIntakeId && (
-              <div className={styles.uploadSection}>
-                <h2 className={styles.uploadTitle}>Upload supporting documents (optional)</h2>
-                <p className={styles.uploadSubtitle}>
-                  Medical records, insurance cards, prescriptions, etc. PDF, JPEG, PNG, GIF, WebP. Max 10 MB.
-                </p>
-                <form onSubmit={handleUpload} className={styles.uploadForm}>
-                  <label className={styles.label}>
-                    File
-                    <input
-                      type="file"
-                      accept=".pdf,image/jpeg,image/png,image/gif,image/webp,application/pdf"
-                      onChange={(e) => {
-                        setUploadFile(e.target.files?.[0] ?? null);
-                        setUploadError(null);
-                      }}
-                      className={styles.input}
-                      disabled={uploading}
-                    />
-                  </label>
-                  <label className={styles.label}>
-                    Description (optional)
-                    <input
-                      type="text"
-                      value={uploadDescription}
-                      onChange={(e) => setUploadDescription(e.target.value)}
-                      placeholder="e.g. Insurance card front"
-                      className={styles.input}
-                      disabled={uploading}
-                    />
-                  </label>
-                  {uploadError && (
-                    <p className={styles.error} role="alert">{uploadError}</p>
-                  )}
-                  {uploadSuccess && (
-                    <p className={styles.success} role="status">{uploadSuccess}</p>
-                  )}
-                  <div className={styles.actions}>
-                    <button
-                      type="submit"
-                      className={styles.submit}
-                      disabled={uploading || !uploadFile}
-                    >
-                      {uploading ? "Uploading…" : "Upload document"}
-                    </button>
-                    <Link href="/" className={styles.secondary}>
-                      Back to home
-                    </Link>
-                  </div>
-                </form>
-              </div>
-            )}
-          </>
+          <p className={styles.success} role="alert">
+            {success}{" "}
+            <Link href="/" className={styles.link}>
+              Back to home
+            </Link>
+            {" or submit another below."}
+          </p>
         )}
 
         {error && (
@@ -295,9 +273,45 @@ export default function IntakePage() {
             />
           </label>
 
+          <div className={styles.uploadSection}>
+            <h2 className={styles.uploadTitle}>Supporting documents (optional)</h2>
+            <p className={styles.uploadSubtitle}>
+              Attach medical records, insurance cards, prescriptions, etc. PDF, JPEG, PNG, GIF, WebP. Max {MAX_FILE_SIZE_MB} MB per file.
+            </p>
+            <label className={styles.label}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPTED_TYPES}
+                multiple
+                onChange={handleFileChange}
+                className={styles.input}
+                disabled={submitting}
+              />
+            </label>
+            {selectedFiles.length > 0 && (
+              <ul className={styles.fileList}>
+                {selectedFiles.map((file, i) => (
+                  <li key={`${file.name}-${i}`} className={styles.fileItem}>
+                    <span className={styles.fileName}>{file.name}</span>
+                    <button
+                      type="button"
+                      className={styles.removeFile}
+                      onClick={() => removeFile(i)}
+                      disabled={submitting}
+                      aria-label={`Remove ${file.name}`}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <div className={styles.actions}>
             <button type="submit" className={styles.submit} disabled={submitting}>
-              {submitting ? "Submitting…" : "Submit application"}
+              {submitLabel}
             </button>
             <button
               type="button"
