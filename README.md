@@ -166,6 +166,8 @@ You are welcome to use AI tools (e.g., GitHub Copilot, ChatGPT, Claude) to assis
 
 Once you've completed the challenge, please commit your changes, push them to your own forked GitHub repository, and share the link with us. Alternatively, emailing a zip file of the repository is acceptable.
 
+**Submission notes:** Please fill in [SUBMISSION.md](./SUBMISSION.md) with your time spent, what you prioritized and why, what you'd improve with more time, and (preferred) a Loom recording link. We value quality decision-making over feature completion.
+
 ## FAQs
 
 **Q: Can I modify the Prisma schema?**

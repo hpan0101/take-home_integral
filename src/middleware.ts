@@ -6,13 +6,16 @@ export default auth((req) => {
   const session = req.auth;
   const isLoggedIn = !!session?.user;
 
-  // Allow login and home for everyone
-  if (pathname === "/login" || pathname === "/") {
+  // Allow login and home for everyone (home is a hub; Cancel from /intake goes here)
+  if (pathname === "/login") {
     if (isLoggedIn) {
       const role = (session.user as { role?: string }).role;
       if (role === "REVIEWER") return NextResponse.redirect(new URL("/queue", req.url));
       if (role === "PATIENT") return NextResponse.redirect(new URL("/intake", req.url));
     }
+    return NextResponse.next();
+  }
+  if (pathname === "/") {
     return NextResponse.next();
   }
 

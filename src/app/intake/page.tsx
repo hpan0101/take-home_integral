@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import styles from "./intake.module.css";
 
 const REQUIRED_FIELDS = [
@@ -36,6 +37,7 @@ const initialFormState: FormState = {
 type CreatedIntake = { id: string };
 
 export default function IntakePage() {
+  const router = useRouter();
   const [form, setForm] = useState<FormState>(initialFormState);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -297,9 +299,14 @@ export default function IntakePage() {
             <button type="submit" className={styles.submit} disabled={submitting}>
               {submitting ? "Submitting…" : "Submit application"}
             </button>
-            <Link href="/" className={styles.secondary}>
+            <button
+              type="button"
+              className={styles.secondary}
+              onClick={() => router.push("/")}
+              disabled={submitting}
+            >
               Cancel
-            </Link>
+            </button>
           </div>
         </form>
       </div>

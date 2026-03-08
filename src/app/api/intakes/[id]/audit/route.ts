@@ -26,7 +26,7 @@ export async function GET(
 
   const intake = await prisma.intake.findUnique({
     where: { id: intakeId },
-    select: { id: true, submittedById: true },
+    select: { submittedById: true },
   });
 
   if (!intake) {

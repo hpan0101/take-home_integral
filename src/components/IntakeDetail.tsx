@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import styles from "@/app/queue/detail.module.css";
-import AuditLog from "@/components/AuditLog";
+import AuditLog, { type AuditLogEntry } from "@/components/AuditLog";
 
 interface IntakeDetailProps {
   intakeId: string;
@@ -13,14 +13,6 @@ interface UserRef {
   id: string;
   name: string | null;
   email: string | null;
-}
-
-interface AuditLogEntry {
-  id: string;
-  action: string;
-  details: string | null;
-  createdAt: string;
-  user: UserRef;
 }
 
 interface DocumentRef {
