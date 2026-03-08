@@ -62,6 +62,8 @@ export default function IntakeDetail({ intakeId }: IntakeDetailProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [privilegedView, setPrivilegedView] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const isReviewer = session?.user?.role === "REVIEWER";
 
@@ -90,7 +92,7 @@ export default function IntakeDetail({ intakeId }: IntakeDetailProps) {
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [intakeId, session?.user?.id, sessionStatus, isReviewer, privilegedView]);
+  }, [intakeId, session?.user?.id, sessionStatus, isReviewer, privilegedView, refreshTrigger]);
 
   if (sessionStatus === "loading" || loading) {
     return <p className={styles.loading}>Loading intake…</p>;
@@ -106,12 +108,66 @@ export default function IntakeDetail({ intakeId }: IntakeDetailProps) {
 
   const statusClass = STATUS_CLASS[intake.status] ?? styles.statusPending;
 
+  const STATUS_OPTIONS = [
+    { value: "PENDING", label: "Pending" },
+    { value: "IN_REVIEW", label: "In review" },
+    { value: "APPROVED", label: "Approved" },
+    { value: "REJECTED", label: "Rejected" },
+  ] as const;
+
+  async function handleStatusChange(newStatus: string) {
+    if (newStatus === intake.status || statusUpdating) return;
+    setStatusUpdating(true);
+    try {
+      const res = await fetch(`/api/intakes/${intakeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error ?? "Failed to update status.");
+        return;
+      }
+      setError(null);
+      setRefreshTrigger((t) => t + 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update status.");
+    } finally {
+      setStatusUpdating(false);
+    }
+  }
+
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <h2 className={styles.title}>Intake Details</h2>
         <span className={`${styles.status} ${statusClass}`}>{intake.status.replace("_", " ")}</span>
       </div>
+
+      {isReviewer && (
+        <div className={styles.statusControl}>
+          <label htmlFor="intake-status" className={styles.statusLabel}>
+            Update status
+          </label>
+          <select
+            id="intake-status"
+            className={styles.statusSelect}
+            value={intake.status}
+            disabled={statusUpdating}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            aria-label="Intake status"
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {statusUpdating && <span className={styles.statusUpdating}>Updating…</span>}
+        </div>
+      )}
 
       {isReviewer && (
         <div className={styles.toggleRow}>
